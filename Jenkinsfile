@@ -1,33 +1,27 @@
 pipeline {
     agent any
-
-    tools {
-        maven 'M3'
-    }
-
-    environment {
-        GIT_SSH_CREDENTIALS_ID = 'github-ssh-key' // use your actual ID
-    }
-
     stages {
-        stage('Checkout') {
+        stage('Clone Stage') {
             steps {
-                git credentialsId: "${env.GIT_SSH_CREDENTIALS_ID}",
-                    url: 'git@github.com:your-org/your-private-repo.git',
-                    branch: 'main'
+                echo 'Git checkout...'
+                git branch: 'jenkinsAssignment3', url: 'https://github.com/akhilkumar0024/war-web-project.git'
             }
         }
-
-        stage('Build with Maven') {
+        stage('Build Stage') {
             steps {
+                echo 'Building...'
                 sh 'mvn clean package'
             }
         }
-
-        stage('Archive WAR') {
+        stage('Deploy to tomcat') {
             steps {
-                archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
+                echo 'Deploying to Tomcat...'
+                sh '''
+                curl -u admin:admin123 -T target/*.war http://localhost:8081/manager/text/deploy?path=/myapp&update=true
+                echo "Deployed Successfully"
+                '''
+
             }
-        }
+        }   
     }
 }
